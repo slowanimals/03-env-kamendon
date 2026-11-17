@@ -1,0 +1,2 @@
+- Used ChatGPT and class slides to learn about enviroments and their corresponding syntax
+- All code written by hand by me
