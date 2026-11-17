@@ -31,8 +31,10 @@ data Expr = PlusE Expr Expr
 -- -6
 
 simpleEval :: Expr -> Int
-simpleEval expr = error "TBD: simpleEval"
-
+simpleEval (PlusE x y) = (simpleEval x) + (simpleEval y)
+simpleEval (MinusE x y) = (simpleEval x) - (simpleEval y)
+simpleEval (TimesE x y) = (simpleEval x) * (simpleEval y)
+simpleEval (NumE n) = n
 
 
 
@@ -69,10 +71,10 @@ simpleEval expr = error "TBD: simpleEval"
 -- Nothing
 
 opMaybe :: (Int -> Int -> Int) -> Maybe Int -> Maybe Int -> Maybe Int
-opMaybe op m1 m2 = error "TBD: opMaybe"
-
-
-
+opMaybe op Nothing Nothing = Nothing
+opMaybe op Nothing y = Nothing
+opMaybe op x Nothing = Nothing
+opMaybe op (Just x) (Just y) = Just (op x y)
 
 
 data VarExpr = PlusVE VarExpr VarExpr
@@ -106,8 +108,14 @@ type ListEnv = [(String, Int)]
 -- Just 21
 
 varExprListEval :: ListEnv -> VarExpr -> Maybe Int
-varExprListEval env expr = error "TBD: varEval"
-
+varExprListEval le (PlusVE x y) = opMaybe (+) (varExprListEval le x) (varExprListEval le y)
+varExprListEval le (MinusVE x y) = opMaybe (-) (varExprListEval le x) (varExprListEval le y)
+varExprListEval le (TimesVE x y) = opMaybe (*) (varExprListEval le x) (varExprListEval le y)
+varExprListEval le (NumVE n) = Just n
+varExprListEval ((name, val):xs) (Var s) 
+  | s == name = Just val
+  | otherwise = varExprListEval xs (Var s)
+varExprListEval [] (Var s) = Nothing
 
 
 
@@ -137,7 +145,12 @@ type FunEnv = String -> Maybe Int
 -- Just 21
 
 varExprFunEval :: FunEnv -> VarExpr -> Maybe Int
-varExprFunEval env expr = error "TBD: varExprFunEval"
+varExprFunEval fe (PlusVE x y) = opMaybe (+) (varExprFunEval fe x) (varExprFunEval fe y)
+varExprFunEval fe (MinusVE x y) = opMaybe (-) (varExprFunEval fe x) (varExprFunEval fe y)
+varExprFunEval fe (TimesVE x y) = opMaybe (*) (varExprFunEval fe x) (varExprFunEval fe y)
+varExprFunEval fe (NumVE n) = Just n
+varExprFunEval fe (Var s) = fe s
+
 
 
 
